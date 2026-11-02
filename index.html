@@ -6,18 +6,17 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#09121D">
 <title>VM-Selfie · EUROGROUP CONSULTING</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 /* Layout: mobile-first single column; navy "Panel" + white work surface, as in the EGC deck. One committed light brand look. */
 :root{
   --navy:#09121D; --navy-2:#12253E; --navy-3:#364B66; --slate:#59708F; --mist:#ACBDD4; --ice:#D9E4F3;
   --red:#F43A47; --red-dk:#AA0F19; --green:#3E9A52; --gold:#B8971F;
   --bg:#F4F6FA; --surface:#FFFFFF; --ink:#09121D; --muted:#59708F; --line:#D9E4F3;
-  --font:"Albert Sans","Aptos","Segoe UI",system-ui,sans-serif;
+  --font:"Aptos","Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,system-ui,sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
@@ -129,6 +128,11 @@ footer{padding-block:0 32px;font-size:12.5px;color:var(--muted)}
 footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 footer a{color:var(--muted)}
 
+.ds{font-size:13.5px;color:var(--navy-2);background:#fff;border:1px solid var(--line);border-radius:4px;padding:12px 14px}
+.ds summary{cursor:pointer;font-weight:700;color:var(--navy)}
+.ds h4{margin:12px 0 4px;font-size:13.5px}
+.ds p{margin:0 0 6px}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12.5px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .sendnote{font-size:13.5px;border-radius:4px;padding:10px 12px}
 .sendnote.warn{background:#FDE3E5;color:var(--red-dk)}
@@ -148,15 +152,14 @@ footer a{color:var(--muted)}
 
 <main class="wrap" id="app"></main>
 
-<footer><div class="wrap"><span>EUROGROUP CONSULTING · Quick-Check orientiert am DSGV-Arbeitsstand VdZ PK 2.2, Modul 5 (04/2026). Kein offizielles DSGV-Werkzeug.</span><a id="dsLink" href="#" target="_blank" rel="noopener">Datenschutz</a></div></footer>
+<footer><div class="wrap"><span>EUROGROUP CONSULTING · Quick-Check orientiert am DSGV-Arbeitsstand VdZ PK 2.2, Modul 5 (04/2026). Kein offizielles DSGV-Werkzeug.</span><button class="linkbtn" id="dsLink" type="button" aria-expanded="false" aria-controls="dsFooter">Datenschutzhinweise</button></div><div class="wrap" id="dsFooter" hidden style="padding-top:12px"></div></footer>
 
 <script>
 (function(){
 /* ================= KONFIGURATION ================= */
-const VERSION = "v1.1";            // bei jeder inhaltlichen Änderung hochzählen
+const VERSION = "v1.2";            // bei jeder inhaltlichen Änderung hochzählen
 const SUPABASE_URL = "https://rilocgjtdkullsfjruqw.supabase.co";       // z. B. https://abcdefgh.supabase.co
 const SUPABASE_KEY = "sb_publishable_EsCRVm5fBr0hxf4Sd9THcg_Z4qZrOBl";   // "publishable" bzw. "anon public" Key (ist öffentlich gedacht)
-const DATENSCHUTZ_URL = "";        // z. B. Link zur EGC-Datenschutzerklärung; leer = Hinweis "Link folgt"
 const BOOKINGS = [                 // weitere Personen einfach als neue Zeile ergänzen
   {name:"Benjamin Beierlein", url:"https://bookings.cloud.microsoft/bookwithme/user/9f113bfb868b4a6d950b16057dce8a89@eurogroupconsulting.de?anonymous&ismsaljsauthenabled&ep=pcard"},
   {name:"Nadja Magura",       url:"https://bookings.cloud.microsoft/bookwithme/user/a2638c487fca4e9d8db7f2dd31690252%40eurogroupconsulting.de?anonymous&ismsaljsauthenabled"},
@@ -166,7 +169,27 @@ document.getElementById("ver").textContent = "Fragebogen " + VERSION;
 const LIVE = /^https:\/\/.+\.supabase\.co/.test(SUPABASE_URL) && !/^HIER_/.test(SUPABASE_KEY);
 const ENDPOINT = SUPABASE_URL.replace(/\/+$/,"") + "/rest/v1/vm_selfie";
 if(!LIVE) document.getElementById("testBanner").hidden = false;
-(function(){const a=document.getElementById("dsLink"); if(DATENSCHUTZ_URL){a.href=DATENSCHUTZ_URL;} else {a.removeAttribute("href");a.textContent="Datenschutzhinweise: Link folgt";}})();
+/* ---------- Datenschutzhinweise (Art. 13 DSGVO) ---------- */
+const DS_HTML = `
+<h4>Verantwortlicher</h4>
+<p>EGC EUROGROUP CONSULTING GmbH, Thurn-und-Taxis-Platz 6, 60313 Frankfurt am Main, Telefon +49 69 2475055-0. Für alle Fragen zum Datenschutz und zur Ausübung Ihrer Rechte: info@eurogroupconsulting.de</p>
+<h4>Welche Daten wir verarbeiten</h4>
+<p>Ihre Kontaktdaten (Vorname, Name, Institut, E-Mail, freiwillig Position und Telefon), Ihre Angaben im Quick-Check (Rolle, Bilanzsumme, Selbsteinschätzung, Antworten, Ergebnis) sowie technische Angaben (Zeitpunkt, Bearbeitungsdauer, Fragebogen-Version, Aufruf der Terminbuchung). Beim Start des Checks wird nur ein anonymer Zähler ohne personenbezogene Daten gespeichert.</p>
+<h4>Zweck und Rechtsgrundlage</h4>
+<p>Wir nutzen die Daten, um Ihnen Ihr Ergebnis anzuzeigen, es mit Ihnen zu besprechen und Sie zu Ihrem Ergebnis und zum Thema Vertriebsmanagement zu kontaktieren. Zusätzlich werten wir die Antworten aller Teilnehmenden zusammengefasst und ohne Personenbezug aus. Rechtsgrundlage ist Ihre Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO. Die Teilnahme ist freiwillig.</p>
+<h4>Empfänger und Speicherort</h4>
+<p>Die Daten werden bei unserem Auftragsverarbeiter Supabase in einem Rechenzentrum in Frankfurt am Main (EU) gespeichert. Die Webseite wird über GitHub Pages (GitHub Inc., USA) bereitgestellt; dabei verarbeitet GitHub technisch notwendige Verbindungsdaten wie Ihre IP-Adresse. Eine Weitergabe an sonstige Dritte erfolgt nicht. Wenn Sie die Terminbuchung öffnen, gelten die Datenschutzbestimmungen von Microsoft Bookings.</p>
+<h4>Speicherdauer</h4>
+<p>Wir löschen Ihre Daten spätestens 12 Monate nach Ihrer Teilnahme, bei einem Widerruf Ihrer Einwilligung umgehend.</p>
+<h4>Ihre Rechte</h4>
+<p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und Datenübertragbarkeit. Ihre Einwilligung können Sie jederzeit mit Wirkung für die Zukunft widerrufen, z. B. per E-Mail an info@eurogroupconsulting.de. Sie können sich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren, etwa beim Hessischen Beauftragten für Datenschutz und Informationsfreiheit.</p>
+<h4>Cookies und Tracking</h4>
+<p>Diese Seite setzt keine Cookies und nutzt keine Analyse- oder Tracking-Dienste.</p>`;
+(function(){
+  const btn=document.getElementById("dsLink"), box=document.getElementById("dsFooter");
+  box.innerHTML='<div class="ds">'+DS_HTML+'</div>';
+  btn.addEventListener("click",()=>{ box.hidden=!box.hidden; btn.setAttribute("aria-expanded",String(!box.hidden)); if(!box.hidden) box.scrollIntoView({behavior:"smooth",block:"start"}); });
+})();
 
 const DIMS = [
   {key:"pkfk", short:"PK/FK", title:"Integration PK & FK",
@@ -326,7 +349,8 @@ function vContact(){
       ${f("institut","Institut",true,"text","organization")}
       ${f("email","E-Mail",true,"email","email")}
       <div class="grid2">${f("position","Position",false,"text","organization-title")}${f("telefon","Telefon",false,"tel","tel")}</div>
-      <label class="consent"><input type="checkbox" id="f_ok" ${c.ok?"checked":""}><span>Ich bin einverstanden, dass EUROGROUP CONSULTING meine Angaben speichert und mich zu meinem Ergebnis und zum Thema Vertriebsmanagement kontaktiert. Die Einwilligung kann ich jederzeit widerrufen. <em style="font-style:normal;color:var(--red)">*</em><br><span style="color:var(--slate)">${DATENSCHUTZ_URL?`<a href="${esc(DATENSCHUTZ_URL)}" target="_blank" rel="noopener" style="color:inherit">Datenschutzhinweise lesen</a>`:"Datenschutzhinweise: Link folgt"}</span></span></label>
+      <label class="consent"><input type="checkbox" id="f_ok" ${c.ok?"checked":""}><span>Ich bin einverstanden, dass EUROGROUP CONSULTING meine Angaben speichert und mich zu meinem Ergebnis und zum Thema Vertriebsmanagement kontaktiert. Die Einwilligung kann ich jederzeit widerrufen. <em style="font-style:normal;color:var(--red)">*</em></span></label>
+      <details class="ds"><summary>Datenschutzhinweise lesen</summary>${DS_HTML}</details>
       <div class="hp" aria-hidden="true"><label for="f_web">Webseite</label><input id="f_web" tabindex="-1" autocomplete="off"></div>
       <p class="err" id="formErr" hidden></p>
       <div class="nav"><button type="button" class="btn ghost" data-go="4">Zurück</button><button type="submit" class="btn" id="submitBtn">Ergebnis anzeigen</button></div>
