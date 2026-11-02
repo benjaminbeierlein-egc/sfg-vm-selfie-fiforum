@@ -123,7 +123,7 @@ main{padding-block:20px 48px}
 .dim dd.egc{border-left:3px solid var(--red);padding-left:10px}
 .cta{background:#fff;border:1px solid var(--line);border-radius:4px;padding:20px;display:grid;gap:14px}
 .code{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg);border:1.5px dashed var(--mist);border-radius:4px;padding:12px 14px}
-.code b{font-size:24px;letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.code b{font-size:24px;letter-spacing:.1em;white-space:nowrap;font-variant-numeric:tabular-nums}
 .code span{font-size:13px;color:var(--muted)}
 footer{padding-block:0 32px;font-size:12.5px;color:var(--muted)}
 footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -153,11 +153,14 @@ footer a{color:var(--muted)}
 <script>
 (function(){
 /* ================= KONFIGURATION ================= */
-const VERSION = "v1.0";            // bei jeder inhaltlichen Änderung hochzählen
+const VERSION = "v1.1";            // bei jeder inhaltlichen Änderung hochzählen
 const SUPABASE_URL = "https://rilocgjtdkullsfjruqw.supabase.co";       // z. B. https://abcdefgh.supabase.co
 const SUPABASE_KEY = "sb_publishable_EsCRVm5fBr0hxf4Sd9THcg_Z4qZrOBl";   // "publishable" bzw. "anon public" Key (ist öffentlich gedacht)
 const DATENSCHUTZ_URL = "";        // z. B. Link zur EGC-Datenschutzerklärung; leer = Hinweis "Link folgt"
-const BOOKINGS = "https://bookings.cloud.microsoft/bookwithme/user/9f113bfb868b4a6d950b16057dce8a89@eurogroupconsulting.de?anonymous&ismsaljsauthenabled&ep=pcard";
+const BOOKINGS = [                 // weitere Personen einfach als neue Zeile ergänzen
+  {name:"Benjamin Beierlein", url:"https://bookings.cloud.microsoft/bookwithme/user/9f113bfb868b4a6d950b16057dce8a89@eurogroupconsulting.de?anonymous&ismsaljsauthenabled&ep=pcard"},
+  {name:"Nadja Magura",       url:"https://bookings.cloud.microsoft/bookwithme/user/a2638c487fca4e9d8db7f2dd31690252%40eurogroupconsulting.de?anonymous&ismsaljsauthenabled"},
+];
 /* ================================================= */
 document.getElementById("ver").textContent = "Fragebogen " + VERSION;
 const LIVE = /^https:\/\/.+\.supabase\.co/.test(SUPABASE_URL) && !/^HIER_/.test(SUPABASE_KEY);
@@ -358,8 +361,8 @@ function vResult(){
       <h2 style="font-size:22px;font-weight:800">Ergebnis gemeinsam einordnen</h2>
       ${s.sent===false?`<div class="sendnote warn">Ihr Ergebnis konnte gerade nicht übertragen werden. Bitte nennen Sie am EGC-Stand Ihren Code, wir kümmern uns darum. <button class="btn ghost" id="retry" style="margin-top:8px;padding:8px 14px">Erneut senden</button></div>`:""}
       <div class="code"><div><span>Ihr Code für den EGC-Stand</span><br><b>${s.code}</b></div><span style="text-align:right">Zeigen Sie ihn unseren Beratern<br>am Stand</span></div>
-      <a class="btn block" href="${BOOKINGS}" target="_blank" rel="noopener">Termin mit EGC buchen</a>
-      <p class="qref">Öffnet unsere Microsoft-Bookings-Seite in einem neuen Fenster.</p>
+      <div style="display:grid;gap:10px">${BOOKINGS.map(b=>`<a class="btn block" href="${esc(b.url)}" target="_blank" rel="noopener">Termin mit ${esc(b.name)} buchen</a>`).join("")}</div>
+      <p class="qref">Öffnet die Microsoft-Bookings-Seite in einem neuen Fenster.</p>
       <button class="btn ghost block" id="restart">${kiosk?"Nächste Person: neu starten":"Selfie neu starten"}</button>
     </div>
   </section>`;
@@ -421,7 +424,7 @@ function bind(){
     });
   }
   const rs=document.getElementById("restart"); if(rs) rs.onclick=()=>{reset();render();window.scrollTo(0,0);};
-  const bk=app.querySelector('a[href^="https://bookings"]'); if(bk) bk.addEventListener("click",()=>{ send({...base("bookings"),code:s.code},{keepalive:true}); });
+  app.querySelectorAll('a[href^="https://bookings"]').forEach(bk=>bk.addEventListener("click",()=>{ send({...base("bookings"),code:s.code},{keepalive:true}); }));
   const rt=document.getElementById("retry"); if(rt) rt.onclick=async()=>{ rt.disabled=true; rt.textContent="Wird gesendet …"; const ok=await send(s.payload); if(ok){ writePending(readPending().filter(p=>p.selfie_id!==s.payload.selfie_id)); s.sent=true; } render(); };
 }
 flushPending();
